@@ -26,7 +26,7 @@ import sys
 
 
 # poor man's substitute for a config file    
-APP_NAME = 'Treasurer'
+APP_NAME = 'The Treasurer'
 
 
 class Treasurer(object):
@@ -58,7 +58,8 @@ class Treasurer(object):
                     password = secret.get_secret()
                     break
         except gnomekeyring.IOError as exc:
-            clerk.inform_and_close('Cannot access secrets in keyring!')
+            clerk.inform_and_close('Cannot access secrets in keyring'
+                                   ' \'{}\'!'.format(self.keyring))
 
         return password
 
@@ -116,4 +117,5 @@ if __name__ == '__main__':
         print password
         sys.exit(0)
     else:
-        clerk.inform_and_close('Cannot find password for \'{}\''.format(args.hint)
+        clerk.inform_and_close('Cannot find password for \'{}\' in keyring'
+                               ' \'{}\'!'.format(args.hint, args.keyring))
