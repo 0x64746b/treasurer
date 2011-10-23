@@ -1,0 +1,23 @@
+About
+=====
+
+The treasurer is a small python script that queries a running instance of the
+gnome keyring daemon for a password identified by a user provided hint.
+
+Since the treasurer is meant to be run inside scripts (to prevent having plain
+passwords scattered all over your config files) with no access to a terminal, it
+communicates problems via libnotify.
+
+So far, the treasurer only supports password retrieval from the gnome keyring
+daemon's default 'login' keyring. This can easily be changed and is simply due
+to the fact that
+ 1. GDM only unlocks the default keyring upon login of a user (provided the
+    other requirements are fulfilled)
+ 2. there is no GUI to unlock a locked keyring yet 
+
+
+Usage
+=====
+
+$ treasurer
+USAGE: $ treasurer <password hint>
