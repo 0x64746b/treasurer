@@ -18,7 +18,7 @@ Usage
 =====
 
 $ treasurer --help
-usage: treasurer [-h] [-k KEYRING] hint
+usage: treasurer [-h] [-k KEYRING] [-l] hint
 
 Inquire the gnome-keyring-daemon for a password
 
@@ -29,4 +29,5 @@ optional arguments:
   -h, --help            show this help message and exit
   -k KEYRING, --keyring KEYRING
                         the keyring that is to be searched for the password
+  -l, --lock            lock the keyring after the query
 
