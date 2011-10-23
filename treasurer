@@ -22,11 +22,15 @@ import argparse
 import gnomekeyring
 import pynotify
 import logging
+import subprocess
 import sys
 
 
 # poor man's substitute for a config file    
 APP_NAME = 'The Treasurer'
+ask_password_cmd = ['zenity', '--entry', '--hide-text',
+                             '--title', APP_NAME, '--text']
+
 
 
 class Treasurer(object):
@@ -58,8 +62,15 @@ class Treasurer(object):
                     password = secret.get_secret()
                     break
         except gnomekeyring.IOError as exc:
-            clerk.inform_and_close('Cannot access secrets in keyring'
-                                   ' \'{}\'!'.format(self.keyring))
+            # the keyring is (probably) locked
+            # ask for the key to unlock it
+            keyring_pass = clerk.ask_for_keyring_pass(self.keyring)
+            try:
+                gnomekeyring.unlock_sync(self.keyring, keyring_pass)
+                password = self.get_password(hint)
+            except gnomekeyring.IOError as exception:
+                clerk.inform_and_close('The password for keyring \'{}\''
+                                  ' was incorrect'.format(self.keyring))
 
         return password
 
@@ -91,6 +102,20 @@ class Clerk(object):
             logging.error('Cannot display notification!')
 
         sys.exit(1)
+
+
+    def ask_for_keyring_pass(self, keyring):
+        '''
+        Ask the customer for the password to the given keyring
+        '''
+        try:
+            ask_password_cmd.append(
+                'Please enter the password to unlock the keyring \'{0}\''.format(
+                    keyring))
+            keyring_password = subprocess.check_output(ask_password_cmd)
+            return keyring_password.strip()
+        except subprocess.CalledProcessError:
+            self.inform_and_close('No password was provided.')
 
 
 #

@@ -9,10 +9,9 @@ passwords scattered all over your config files) with no access to a terminal, it
 communicates problems via libnotify.
 
 This scenario leads to the treasurer being unable to ask for a password to
-unlock a keyring via STDIN. This means that until there is a (potentially GUI)
-solution to that problem, you painfully have to make sure that all keyrings your
-scripts want to access are unlocked. Seahorse can help you with it, but it still
-is a very manual action.
+unlock a keyring via STDIN. This means that if it encounters a locked keyring,
+it will present you with a GTK dialog asking for the key to the 'ring. No
+offense meant. It just was the easiest solution.
 
 
 Usage
