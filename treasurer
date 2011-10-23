@@ -61,14 +61,14 @@ class Treasurer(object):
                 if secret.get_display_name() == hint:
                     password = secret.get_secret()
                     break
-        except gnomekeyring.IOError as exc:
+        except gnomekeyring.IOError:
             # the keyring is (probably) locked
             # ask for the key to unlock it
             keyring_pass = clerk.ask_for_keyring_pass(self.keyring)
             try:
                 gnomekeyring.unlock_sync(self.keyring, keyring_pass)
                 password = self.get_password(hint)
-            except gnomekeyring.IOError as exception:
+            except gnomekeyring.IOError:
                 clerk.inform_and_close('The password for keyring \'{}\''
                                   ' was incorrect'.format(self.keyring))
 
