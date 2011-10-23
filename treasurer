@@ -69,6 +69,7 @@ class Treasurer(object):
                 keyring_pass = clerk.ask_for_keyring_pass(self.keyring)
                 try:
                     gnomekeyring.unlock_sync(self.keyring, keyring_pass)
+                    self.did_unlock = True
                     password = self.get_password(hint)
                 except gnomekeyring.IOError:
                     clerk.inform_and_close('The password for keyring \'{}\''
