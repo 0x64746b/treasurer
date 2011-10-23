@@ -42,11 +42,11 @@ class Treasurer(object):
 
         # check keyring daemon
         if not gnomekeyring.is_available():
-            clerk.inform_and_close('Gnome Keyring Daemon is not available!')
+            clerk.inform_and_close('Gnome Keyring Daemon is not available')
 
         # check keyring
         if not self.keyring in gnomekeyring.list_keyring_names_sync():
-            clerk.inform_and_close('There is no keyring with name \'{}\'!'.format(
+            clerk.inform_and_close('There is no keyring with name \'{}\''.format(
                 self.keyring))
 
 
@@ -115,7 +115,7 @@ class Clerk(object):
             keyring_password = subprocess.check_output(ask_password_cmd)
             return keyring_password.strip()
         except subprocess.CalledProcessError:
-            self.inform_and_close('No password was provided.')
+            self.inform_and_close('No password was provided')
 
 
 #
@@ -143,4 +143,4 @@ if __name__ == '__main__':
         sys.exit(0)
     else:
         clerk.inform_and_close('Cannot find password for \'{}\' in keyring'
-                               ' \'{}\'!'.format(args.hint, args.keyring))
+                               ' \'{}\''.format(args.hint, args.keyring))
