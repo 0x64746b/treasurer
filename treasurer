@@ -29,12 +29,12 @@ import pynotify
 import gnomekeyring
 
 
-# poor man's substitute for a config file    
+# poor man's substitute for a config file
 APP_NAME = 'The Treasurer'
 ask_password_cmd = ['zenity', '--entry', '--hide-text',
                              '--title', APP_NAME, '--text']
 
-class keyring_errors(object):
+class KeyringErrors(object):
     '''
     Encapsulate keyring error messages enum style.
     Lend semantic meaning to generic exceptions.
@@ -46,7 +46,7 @@ class keyring_errors(object):
 class Treasurer(object):
 
     def __init__(self, clerk, keyring):
-    
+
         self.clerk = clerk
         self.keyring = keyring
 
@@ -73,7 +73,7 @@ class Treasurer(object):
                     break
         except gnomekeyring.IOError:
             keyring_error = clerk.get_keyring_error()
-            if clerk.is_problem(keyring_errors.LOCKED_KEYRING, keyring_error):
+            if clerk.is_problem(KeyringErrors.LOCKED_KEYRING, keyring_error):
                 # the keyring is locked - ask for the key to unlock it
                 keyring_pass = clerk.ask_for_keyring_pass(self.keyring)
                 try:
@@ -81,9 +81,9 @@ class Treasurer(object):
                     password = self.get_password(hint)
                 except gnomekeyring.IOError:
                     keyring_error = clerk.get_keyring_error()
-                    if clerk.is_problem(keyring_errors.WRONG_PASSWORD, keyring_error):
+                    if clerk.is_problem(KeyringErrors.WRONG_PASSWORD, keyring_error):
                         clerk.close_shop('The password for keyring "{}"'
-                                        ' was incorrect'.format(self.keyring))
+                                  ' was incorrect'.format(self.keyring))
                     else:
                         clerk.close_shop(keyring_error)
             else:
@@ -102,7 +102,7 @@ class Treasurer(object):
 
 class Clerk(object):
     '''
-    A rather unqualified but useful helper 
+    A rather unqualified but useful helper
     than handles the communication with the customer
     '''
 
@@ -114,7 +114,7 @@ class Clerk(object):
         if not pynotify.init(app_name):
             logging.error('Could not initialize notification mechanism!')
             sys.exit(1)
- 
+
         self.keyring_errors = keyring_errors
 
 
@@ -124,7 +124,7 @@ class Clerk(object):
         '''
         notification = pynotify.Notification(self.app_name, notification)
         notification.set_urgency(pynotify.URGENCY_CRITICAL)
-        
+
         if not notification.show():
             logging.error('Cannot display notification!')
 
@@ -167,14 +167,14 @@ if __name__ == '__main__':
                         ' gnome-keyring-daemon for a password')
 
     parser.add_argument('hint', help='the identifier of the sought-after password')
-    parser.add_argument('-k', '--keyring', default='login', 
+    parser.add_argument('-k', '--keyring', default='login',
                         help='the keyring that is to be searched for the password')
     parser.add_argument('-l', '--lock', action='store_true',
                         help='lock the keyring after the query')
 
     args = parser.parse_args()
 
-    # overhear STDERR 
+    # overhear STDERR
     ## backup first
     backupped_two = os.dup(2)
     sys.stderr = os.fdopen(backupped_two, 'w', 1)
