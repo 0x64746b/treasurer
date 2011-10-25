@@ -17,12 +17,12 @@ offense meant. It just was the easiest solution.
 Install
 =======
 
-Don't. Just execute the script. So far it's all in one file, so you are able to
-read the code without browsing. Besides, keeping everything together helps
-suppressing the urge to add more n more stuff. KISS, you know.
+I would like to recommend installing the treasurer locally.
+For this purpose, a simple
 
-At most you might put the script into your path for some added convenience. But
-you can handle that.
+    $ python setup.py install --prefix=$HOME/.local
+
+should do the job nicely.
 
 
 Usage
