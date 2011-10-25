@@ -106,7 +106,7 @@ class Clerk(object):
     than handles the communication with the customer
     '''
 
-    def __init__(self, app_name):
+    def __init__(self, app_name, keyring_errors):
 
         self.app_name = app_name
 
@@ -115,13 +115,7 @@ class Clerk(object):
             logging.error('Could not initialize notification mechanism!')
             sys.exit(1)
  
-        # overhear STDERR 
-        ## backup first
-        backupped_two = os.dup(2)
-        sys.stderr = os.fdopen(backupped_two, 'w', 1)
-        ## capture lib's stderr
-        self.keyring_errors, error_adaptor = os.pipe()
-        os.dup2(error_adaptor, 2)
+        self.keyring_errors = keyring_errors
 
 
     def close_shop(self, notification):
@@ -180,8 +174,16 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # overhear STDERR 
+    ## backup first
+    backupped_two = os.dup(2)
+    sys.stderr = os.fdopen(backupped_two, 'w', 1)
+    ## capture lib's stderr
+    pipe_end, error_adaptor = os.pipe()
+    os.dup2(error_adaptor, 2)
+
     # start the business
-    clerk = Clerk(APP_NAME)
+    clerk = Clerk(APP_NAME, pipe_end)
     treasurer = Treasurer(clerk, args.keyring)
 
     # get password
