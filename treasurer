@@ -150,7 +150,7 @@ class Clerk(object):
         Read the error message the C lib printed to STDERR and
         do some pretty printing
         '''
-        return os.read(self.keyring_errors, 1024).split(':')[-1].strip()
+        return self.keyring_errors.readline().split(':')[-1].strip()
 
 
     def is_problem(self, expected, actual):
@@ -181,9 +181,10 @@ if __name__ == '__main__':
     ## capture lib's stderr
     pipe_end, error_adaptor = os.pipe()
     os.dup2(error_adaptor, 2)
+    keyring_channel = os.fdopen(pipe_end, 'r', 1)
 
     # start the business
-    clerk = Clerk(APP_NAME, pipe_end)
+    clerk = Clerk(APP_NAME, keyring_channel)
     treasurer = Treasurer(clerk, args.keyring)
 
     # get password
