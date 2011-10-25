@@ -114,8 +114,12 @@ class Clerk(object):
         if not pynotify.init(app_name):
             logging.error('Could not initialize notification mechanism!')
             sys.exit(1)
-       
+ 
         # overhear STDERR 
+        ## backup first
+        backupped_two = os.dup(2)
+        sys.stderr = os.fdopen(backupped_two, 'w', 1)
+        ## capture lib's stderr
         self.keyring_errors, error_adaptor = os.pipe()
         os.dup2(error_adaptor, 2)
 
