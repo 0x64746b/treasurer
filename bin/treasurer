@@ -52,11 +52,11 @@ class Treasurer(object):
 
         # check keyring daemon
         if not gnomekeyring.is_available():
-            clerk.close_shop('Gnome Keyring Daemon is not available')
+            self.clerk.close_shop('Gnome Keyring Daemon is not available')
 
         # check keyring
         if not self.keyring in gnomekeyring.list_keyring_names_sync():
-            clerk.close_shop('There is no keyring with name "{}"'.format(
+            self.clerk.close_shop('There is no keyring with name "{}"'.format(
                 self.keyring))
 
 
@@ -72,22 +72,22 @@ class Treasurer(object):
                     password = secret.get_secret()
                     break
         except gnomekeyring.IOError:
-            keyring_error = clerk.get_keyring_error()
-            if clerk.is_problem(KeyringErrors.LOCKED_KEYRING, keyring_error):
+            keyring_error = self.clerk.get_keyring_error()
+            if self.clerk.is_problem(KeyringErrors.LOCKED_KEYRING, keyring_error):
                 # the keyring is locked - ask for the key to unlock it
-                keyring_pass = clerk.ask_for_keyring_pass(self.keyring)
+                keyring_pass = self.clerk.ask_for_keyring_pass(self.keyring)
                 try:
                     gnomekeyring.unlock_sync(self.keyring, keyring_pass)
                     password = self.get_password(hint)
                 except gnomekeyring.IOError:
-                    keyring_error = clerk.get_keyring_error()
-                    if clerk.is_problem(KeyringErrors.WRONG_PASSWORD, keyring_error):
-                        clerk.close_shop('The password for keyring "{}"'
-                                  ' was incorrect'.format(self.keyring))
+                    keyring_error = self.clerk.get_keyring_error()
+                    if self.clerk.is_problem(KeyringErrors.WRONG_PASSWORD, keyring_error):
+                        self.clerk.close_shop('The password for keyring "{}"'
+                                       ' was incorrect'.format(self.keyring))
                     else:
-                        clerk.close_shop(keyring_error)
+                        self.clerk.close_shop(keyring_error)
             else:
-                clerk.close_shop(keyring_error)
+                self.clerk.close_shop(keyring_error)
 
         return password
 
@@ -96,8 +96,9 @@ class Treasurer(object):
         try:
             gnomekeyring.lock_sync(self.keyring)
         except gnomekeyring.NoSuchKeyringError:
-            clerk.close_shop('Could not lock keyring "{}"'.format(
-                                    self.keyring))
+            self.clerk.close_shop('Could not lock keyring "{}"'.format(
+                                   self.keyring))
+
 
 
 class Clerk(object):
@@ -158,22 +159,12 @@ class Clerk(object):
         Check whether the actual error matches the expected one
         '''
         return re.search(expected, actual)
-#
-# main
-#
-if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Inquire the'
-                        ' gnome-keyring-daemon for a password')
 
-    parser.add_argument('hint', help='the identifier of the sought-after password')
-    parser.add_argument('-k', '--keyring', default='login',
-                        help='the keyring that is to be searched for the password')
-    parser.add_argument('-l', '--lock', action='store_true',
-                        help='lock the keyring after the query')
-
-    args = parser.parse_args()
-
+def main(args):
+    '''
+    Main flow control
+    '''
     # overhear STDERR
     ## backup first
     backupped_two = os.dup(2)
@@ -200,3 +191,22 @@ if __name__ == '__main__':
         treasurer.lock_keyring()
 
     sys.exit(0)
+
+
+#
+# main
+#
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Inquire the'
+                        ' gnome-keyring-daemon for a password')
+
+    parser.add_argument('hint', help='the identifier of the sought-after password')
+    parser.add_argument('-k', '--keyring', default='login',
+                        help='the keyring that is to be searched for the password')
+    parser.add_argument('-l', '--lock', action='store_true',
+                        help='lock the keyring after the query')
+
+    args = parser.parse_args()
+
+    main(args)
