@@ -18,14 +18,15 @@
 #
 
 
-import argparse
-import gnomekeyring
-import pynotify
-import logging
-import subprocess
 import sys
 import os
 import re
+import logging
+import argparse
+import subprocess
+
+import pynotify
+import gnomekeyring
 
 
 # poor man's substitute for a config file    
