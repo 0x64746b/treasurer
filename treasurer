@@ -52,11 +52,11 @@ class Treasurer(object):
 
         # check keyring daemon
         if not gnomekeyring.is_available():
-            clerk.inform_and_close('Gnome Keyring Daemon is not available')
+            clerk.close_shop('Gnome Keyring Daemon is not available')
 
         # check keyring
         if not self.keyring in gnomekeyring.list_keyring_names_sync():
-            clerk.inform_and_close('There is no keyring with name "{}"'.format(
+            clerk.close_shop('There is no keyring with name "{}"'.format(
                 self.keyring))
 
 
@@ -82,12 +82,12 @@ class Treasurer(object):
                 except gnomekeyring.IOError:
                     keyring_error = clerk.get_keyring_error()
                     if clerk.is_problem(keyring_errors.WRONG_PASSWORD, keyring_error):
-                        clerk.inform_and_close('The password for keyring "{}"'
+                        clerk.close_shop('The password for keyring "{}"'
                                         ' was incorrect'.format(self.keyring))
                     else:
-                        clerk.inform_and_close(keyring_error)
+                        clerk.close_shop(keyring_error)
             else:
-                clerk.inform_and_close(keyring_error)
+                clerk.close_shop(keyring_error)
 
         return password
 
@@ -96,7 +96,7 @@ class Treasurer(object):
         try:
             gnomekeyring.lock_sync(self.keyring)
         except gnomekeyring.NoSuchKeyringError:
-            clerk.inform_and_close('Could not lock keyring "{}"'.format(
+            clerk.close_shop('Could not lock keyring "{}"'.format(
                                     self.keyring))
 
 
@@ -120,7 +120,7 @@ class Clerk(object):
         os.dup2(error_adaptor, 2)
 
 
-    def inform_and_close(self, notification):
+    def close_shop(self, notification):
         '''
         Notify the user and exit with an error
         '''
@@ -144,7 +144,7 @@ class Clerk(object):
             keyring_password = subprocess.check_output(ask_password_cmd)
             return keyring_password.strip()
         except subprocess.CalledProcessError:
-            self.inform_and_close('No password was provided')
+            self.close_shop('No password was provided')
 
 
     def get_keyring_error(self):
@@ -185,7 +185,7 @@ if __name__ == '__main__':
     if password:
         print password
     else:
-        clerk.inform_and_close('Cannot find password for "{}" in keyring'
+        clerk.close_shop('Cannot find password for "{}" in keyring'
                                ' "{}"'.format(args.hint, args.keyring))
 
     # lock keyring before leaving?
