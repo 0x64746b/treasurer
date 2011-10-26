@@ -51,6 +51,7 @@ def main(args):
     password = treasurer.get_password(args.hint)
     if password:
         print password
+        password = treasurer.shred_password(password)
     else:
         clerk.close_shop('Cannot find password for "{}" in keyring'
                                ' "{}"'.format(args.hint, args.keyring))

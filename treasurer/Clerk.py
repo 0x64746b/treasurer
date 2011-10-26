@@ -64,7 +64,7 @@ class Clerk(object):
             self.ask_password_command.append(
                 'Please enter the password to unlock the keyring "{}"'.format(
                  keyring))
-            keyring_password = subprocess.check_output(self.ask_password_command)
+            keyring_password = bytearray(subprocess.check_output(self.ask_password_command))
             return keyring_password.strip()
         except subprocess.CalledProcessError:
             self.close_shop('No password was provided')

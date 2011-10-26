@@ -17,6 +17,8 @@
 #
 
 
+import random
+
 import gnomekeyring
 
 
@@ -55,7 +57,7 @@ class Treasurer(object):
             for casket in gnomekeyring.list_item_ids_sync(self.keyring):
                 secret = gnomekeyring.item_get_info_sync(self.keyring, casket)
                 if secret.get_display_name() == hint:
-                    password = secret.get_secret()
+                    password = bytearray(secret.get_secret())
                     break
         except gnomekeyring.IOError:
             keyring_error = self.clerk.get_keyring_error()
@@ -63,7 +65,8 @@ class Treasurer(object):
                 # the keyring is locked - ask for the key to unlock it
                 keyring_pass = self.clerk.ask_for_keyring_pass(self.keyring)
                 try:
-                    gnomekeyring.unlock_sync(self.keyring, keyring_pass)
+                    gnomekeyring.unlock_sync(self.keyring, str(keyring_pass))
+                    keyring_pass = self.shred_password(keyring_pass)
                     password = self.get_password(hint)
                 except gnomekeyring.IOError:
                     keyring_error = self.clerk.get_keyring_error()
@@ -76,6 +79,17 @@ class Treasurer(object):
                 self.clerk.close_shop(keyring_error)
 
         return password
+
+
+    def shred_password(self, password):
+        '''
+        Invalidate the given password in memory
+        '''
+        for index in range(len(password)):
+            # overwrite with random bytes so they cannot be easily spotted
+            # in memory since they still reveal the length of the password
+            password[index] = random.choice(range(256))
+        return None
 
 
     def lock_keyring(self):
