@@ -17,7 +17,7 @@
 #
 
 __productname__ = 'treasurer'
-__version__ = '0.1-dev'
+__version__ = '0.2-dev'
 __copyright__ = "Copyright (C) 2011 dtk"
 __author__ = "dtk"
 __author_email__ = "dtk@gmx.de"

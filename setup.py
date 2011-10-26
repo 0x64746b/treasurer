@@ -21,7 +21,7 @@ import distutils.core
 import treasurer
 
 distutils.core.setup(
-    name = 'treasurer',
+    name = treasurer.__productname__, 
     version = treasurer.__version__,
     description = treasurer.__description__,
     author = treasurer.__author__,
