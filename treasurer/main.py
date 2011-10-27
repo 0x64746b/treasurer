@@ -35,13 +35,7 @@ def main(args):
     Main flow control
     '''
     # overhear STDERR
-    ## backup first
-    backupped_two = os.dup(2)
-    sys.stderr = os.fdopen(backupped_two, 'w', 1)
-    ## capture lib's stderr
-    pipe_end, error_adaptor = os.pipe()
-    os.dup2(error_adaptor, 2)
-    keyring_channel = os.fdopen(pipe_end, 'r', 1)
+    keyring_channel = __capture_stderr()
 
     # start the business
     clerk = Clerk(APP_NAME, keyring_channel, ask_password_cmd)
@@ -70,3 +64,14 @@ def main(args):
     sys.exit(0)
 
 
+def __capture_stderr():
+    '''
+    Captures printed to STDERR by the underlying libgnomekeyring
+    '''
+    ## backup old fd 2 first
+    backupped_two = os.dup(2)
+    sys.stderr = os.fdopen(backupped_two, 'w', 1)
+    ## capture lib's stderr
+    pipe_end, error_adaptor = os.pipe()
+    os.dup2(error_adaptor, 2)
+    return os.fdopen(pipe_end, 'r', 1)
