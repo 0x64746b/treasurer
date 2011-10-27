@@ -48,6 +48,36 @@ class Treasurer(object):
                 self.keyring))
 
 
+    def get_hints(self):
+        '''
+        List all available password hints
+        '''
+        hints = []
+        try:
+            for casket in gnomekeyring.list_item_ids_sync(self.keyring):
+                secret = gnomekeyring.item_get_info_sync(self.keyring, casket)
+                hints.append(secret.get_display_name())
+        except gnomekeyring.IOError:
+            keyring_error = self.clerk.get_keyring_error()
+            if self.clerk.is_problem(KeyringErrors.LOCKED_KEYRING, keyring_error):
+                # the keyring is locked - ask for the key to unlock it
+                keyring_pass = self.clerk.ask_for_keyring_pass(self.keyring)
+                try:
+                    gnomekeyring.unlock_sync(self.keyring, str(keyring_pass))
+                    keyring_pass = self.shred_password(keyring_pass)
+                    hints = self.get_hints()
+                except gnomekeyring.IOError:
+                    keyring_error = self.clerk.get_keyring_error()
+                    if self.clerk.is_problem(KeyringErrors.WRONG_PASSWORD, keyring_error):
+                        self.clerk.close_shop('The password for keyring "{}"'
+                                       ' was incorrect'.format(self.keyring))
+                    else:
+                        self.clerk.close_shop(keyring_error)
+            else:
+                self.clerk.close_shop(keyring_error)
+        return hints
+
+
     def get_password(self, hint):
         '''
         Retrieve the password that belongs to the given hint

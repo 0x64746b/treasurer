@@ -47,14 +47,21 @@ def main(args):
     clerk = Clerk(APP_NAME, keyring_channel, ask_password_cmd)
     treasurer = Treasurer(clerk, args.keyring)
 
-    # get password
-    password = treasurer.get_password(args.hint)
-    if password:
-        print password
-        password = treasurer.shred_password(password)
+    if args.list:
+        # --list
+        hints = treasurer.get_hints()
+        print 'Keyring "{}" stores the hints:'.format(args.keyring)
+        for hint in hints:
+            print ' * {}'.format(hint)
     else:
-        clerk.close_shop('Cannot find password for "{}" in keyring'
-                               ' "{}"'.format(args.hint, args.keyring))
+        # get password
+        password = treasurer.get_password(args.hint)
+        if password:
+            print password
+            password = treasurer.shred_password(password)
+        else:
+            clerk.close_shop('Cannot find password for "{}" in keyring'
+                                   ' "{}"'.format(args.hint, args.keyring))
 
     # lock keyring before leaving?
     if args.lock:

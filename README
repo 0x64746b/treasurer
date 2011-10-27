@@ -21,6 +21,7 @@ Features
    * Notifications via libnotify
    * Asks for passwords to locked keyrings via a GTK dialog
  * Keyring selection
+ * List all hints in the selected keyring
  * Lock keyring after query
  * Invalidate passwords (to locked keyrings and read from the same) in memory
    when no longer needed

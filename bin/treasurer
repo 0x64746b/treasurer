@@ -31,12 +31,22 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Inquire the'
                         ' gnome-keyring-daemon for a password')
 
-    parser.add_argument('hint', help='the identifier of the sought-after password')
+    parser.add_argument('hint', nargs='?',
+                        help='the identifier of the sought-after password')
+    
     parser.add_argument('-k', '--keyring', default='login',
-                        help='the keyring that is to be searched for the password')
-    parser.add_argument('-l', '--lock', action='store_true',
+                        help='the keyring that is to be searched ' \
+                             'for the password')
+    parser.add_argument('-l', '--list', action='store_true',
+                        help='list all password hints ' \
+                             'available in the selected keyring')
+    parser.add_argument('--lock', action='store_true',
                         help='lock the keyring after the query')
 
     args = parser.parse_args()
+
+    # --list XOR hint
+    if not (args.list ^ bool(args.hint)):
+        parser.error('exactly one of the arguments --list and hint is required')
 
     main(args)
