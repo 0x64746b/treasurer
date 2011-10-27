@@ -53,28 +53,8 @@ class Treasurer(object):
         List all available password hints
         '''
         hints = []
-        try:
-            for casket in gnomekeyring.list_item_ids_sync(self.keyring):
-                secret = gnomekeyring.item_get_info_sync(self.keyring, casket)
-                hints.append(secret.get_display_name())
-        except gnomekeyring.IOError:
-            keyring_error = self.clerk.get_keyring_error()
-            if self.clerk.is_problem(KeyringErrors.LOCKED_KEYRING, keyring_error):
-                # the keyring is locked - ask for the key to unlock it
-                keyring_pass = self.clerk.ask_for_keyring_pass(self.keyring)
-                try:
-                    gnomekeyring.unlock_sync(self.keyring, str(keyring_pass))
-                    keyring_pass = self.shred_password(keyring_pass)
-                    hints = self.get_hints()
-                except gnomekeyring.IOError:
-                    keyring_error = self.clerk.get_keyring_error()
-                    if self.clerk.is_problem(KeyringErrors.WRONG_PASSWORD, keyring_error):
-                        self.clerk.close_shop('The password for keyring "{}"'
-                                       ' was incorrect'.format(self.keyring))
-                    else:
-                        self.clerk.close_shop(keyring_error)
-            else:
-                self.clerk.close_shop(keyring_error)
+        for secret in self.__get_each_secret():
+            hints.append(secret.get_display_name())
         return hints
 
 
@@ -83,31 +63,10 @@ class Treasurer(object):
         Retrieve the password that belongs to the given hint
         '''
         password = None
-        try:
-            for casket in gnomekeyring.list_item_ids_sync(self.keyring):
-                secret = gnomekeyring.item_get_info_sync(self.keyring, casket)
-                if secret.get_display_name() == hint:
-                    password = bytearray(secret.get_secret())
-                    break
-        except gnomekeyring.IOError:
-            keyring_error = self.clerk.get_keyring_error()
-            if self.clerk.is_problem(KeyringErrors.LOCKED_KEYRING, keyring_error):
-                # the keyring is locked - ask for the key to unlock it
-                keyring_pass = self.clerk.ask_for_keyring_pass(self.keyring)
-                try:
-                    gnomekeyring.unlock_sync(self.keyring, str(keyring_pass))
-                    keyring_pass = self.shred_password(keyring_pass)
-                    password = self.get_password(hint)
-                except gnomekeyring.IOError:
-                    keyring_error = self.clerk.get_keyring_error()
-                    if self.clerk.is_problem(KeyringErrors.WRONG_PASSWORD, keyring_error):
-                        self.clerk.close_shop('The password for keyring "{}"'
-                                       ' was incorrect'.format(self.keyring))
-                    else:
-                        self.clerk.close_shop(keyring_error)
-            else:
-                self.clerk.close_shop(keyring_error)
-
+        for secret in self.__get_each_secret():
+            if secret.get_display_name() == hint:
+                password = bytearray(secret.get_secret())
+                break
         return password
 
 
@@ -130,4 +89,27 @@ class Treasurer(object):
                                    self.keyring))
 
 
+    def __get_each_secret(self):
+        try:
+            for casket in gnomekeyring.list_item_ids_sync(self.keyring):
+                yield gnomekeyring.item_get_info_sync(self.keyring, casket)
+        except gnomekeyring.IOError:
+            keyring_error = self.clerk.get_keyring_error()
+            if self.clerk.is_problem(KeyringErrors.LOCKED_KEYRING, keyring_error):
+                # the keyring is locked - ask for the key to unlock it
+                keyring_pass = self.clerk.ask_for_keyring_pass(self.keyring)
+                try:
+                    gnomekeyring.unlock_sync(self.keyring, str(keyring_pass))
+                    keyring_pass = self.shred_password(keyring_pass)
+                    for secret in self.__get_each_secret():
+                        yield secret
+                except gnomekeyring.IOError:
+                    keyring_error = self.clerk.get_keyring_error()
+                    if self.clerk.is_problem(KeyringErrors.WRONG_PASSWORD, keyring_error):
+                        self.clerk.close_shop('The password for keyring "{}"'
+                                       ' was incorrect'.format(self.keyring))
+                    else:
+                        self.clerk.close_shop(keyring_error)
+            else:
+                self.clerk.close_shop(keyring_error)
 
