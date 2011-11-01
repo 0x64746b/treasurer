@@ -36,16 +36,17 @@ class Treasurer(object):
     def __init__(self, clerk, keyring):
 
         self.clerk = clerk
-        self.keyring = keyring
+        self.keyring = None
 
         # check keyring daemon
         if not gnomekeyring.is_available():
             self.clerk.close_shop('Gnome Keyring Daemon is not available')
 
         # check keyring
-        if not self.keyring in gnomekeyring.list_keyring_names_sync():
+        self.keyring = self.__find_fuzzy(keyring, gnomekeyring.list_keyring_names_sync())
+        if not self.keyring:
             self.clerk.close_shop('There is no keyring with name "{}"'.format(
-                self.keyring))
+                keyring))
 
 
     def get_hints(self):
@@ -87,6 +88,22 @@ class Treasurer(object):
         except gnomekeyring.NoSuchKeyringError:
             self.clerk.close_shop('Could not lock keyring "{}"'.format(
                                    self.keyring))
+
+
+    def __find_fuzzy(self, search, collection):
+        hits = []
+        if search in collection:
+            hits.append(search)
+        else:
+            for item in collection:
+                if item.startswith(search):
+                    hits.append(item)
+        if len(hits) == 0:
+            self.clerk.close_shop('Found no match for "{}"'.format(search))
+        elif len(hits) > 1:
+            self.clerk.close_shop('"{}" is not unique'.format(search))
+        else:
+            return hits[0]
 
 
     def __get_each_secret(self):
